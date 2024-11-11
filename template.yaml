@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "DDNS (Dynamic DNS) Api for updating Route53 records"
+
+Parameters:
+  Environment:
+    Type: String
+    Description: "Environment"
+    Default: "dev"
+  Debug:
+    Type: String
+    Description: Debug mode for logs
+    Default: "true"
+    AllowedValues:
+    - "true"
+    - "false"
+  # TinkuWrapperEndpoint:
+  #   Type: AWS::SSM::Parameter::Value<String>
+  #   Default: /payments/debin/TINKU_WRAPPER_ENDPOINT
+Globals:
+  Function:
+    Runtime: provided.al2023
+    Timeout: 30
+    MemorySize: 128
+    Handler: bootstrap
+    Environment:
+      Variables:
+        SOME_ENV_VAR: "some-value"
+
+Resources:
+
+  ### Functions ###
+  UpdateIP:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: go1.x
+    Properties:
+      CodeUri: ./src/ddns-server
+      Handler: bootstrap
+
+      Events:
+        RefreshIP:
+          Type: Api
+          Properties:
+            Path: /refresh-ip
+            Method: post
+      # Policies:
+      #   - LambdaInvokePolicy:
+      #       FunctionName: '*'

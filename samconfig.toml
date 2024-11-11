@@ -1,0 +1,14 @@
+version=0.1
+
+[default]
+region = "us-east-1"
+
+[default.local_invoke.parameters]
+template_file = ".aws-sam/build/template.yaml"
+skip_pull_image = true
+container_host = "host.docker.internal"
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
