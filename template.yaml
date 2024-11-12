@@ -43,7 +43,7 @@ Resources:
           Type: Api
           Properties:
             Path: /refresh-ip
-            Method: post
+            Method: get
       # Policies:
       #   - LambdaInvokePolicy:
       #       FunctionName: '*'
