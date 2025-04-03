@@ -1,0 +1,53 @@
+version: '3'
+services:
+  # ddns:
+  #   build:
+  #     context: .
+  #     dockerfile: ./etc/Dockerfile
+  #     target: hotreload
+  #   volumes:
+  #     - .build:/var/task
+  #     - ./:/app
+  #   ports:
+  #     - 8080:8080
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+  #     - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+  #     - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+  #     - AWS_REGION=${AWS_DEFAULT_REGION}
+  
+  ddns:
+    hostname: ddns
+    build:
+      context: .
+      dockerfile: ./etc/Dockerfile
+      target: servermode
+    # volumes:
+    #   - .build:/var/task
+    expose:
+      - 8081
+    ports:
+      - "4000:4000"
+      - "9000:9000"
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+    networks:
+      - ddns-dev-net
+    cap_add:
+      - SYS_PTRACE
+
+  
+  proxy:
+    hostname: proxy
+    image: ricardocermeno/lambdarpc
+    environment:
+      LAMBDA_DEST_PORT: "ddns:9000"
+    ports:
+      - 8080:8080
+    networks:
+      - ddns-dev-net
+
+networks:
+  ddns-dev-net:

@@ -9,7 +9,9 @@ samcli: ## Run command into container
 	@docker run -it --rm --platform linux/arm64/v8 \
 		--env-file .env \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v $(CURDIR):$(CURDIR) -w $(CURDIR) \
+		-v $(CURDIR):$(CURDIR) \
+		-v $(CURDIR):/tmp/samcli/source \
+		-w $(CURDIR) \
 		-u root \
 		ricardocermeno/samcli $(bin)
 
@@ -21,8 +23,19 @@ sam: command ?= --help
 sam:
 	@make samcli bin="sam $(command)"
 
-build b: ## Generate AWS SAM package
-	make sam command="build -p --use-container"
+sam.build sb: arch ?= arm64 
+sam.build sb: ## Generate AWS SAM package
+	make sam command="build -p --use-container --parameter-overrides 'Architecture=$(arch)'"
+
+build.amd b.amd:
+	make build arch="x86_64"
+
+build.dev bdev:
+	GOOS=linux GOARCH=arm64 go build -C ./cmd/lambda -v -gcflags "all=-N -l" -o $(CURDIR)/.build/main
+
+run.dev run:
+	_LAMBDA_SERVER_PORT="8080" go run -C ./cmd/lambda -v -gcflags='all=-N -l' main.go
+
 
 package p: ## Generate AWS SAM package
 	make sam command="package"
@@ -74,9 +87,13 @@ endif
 status ps s: ## Show enviroment status (optional service="...") 
 	docker-compose ps $(service)
 
-up u: service ?= samapi
+build: service ?= ddns
+build: ## Up/recreate one or all service containers (optional service="...")
+	docker-compose build $(service)
+
+up u: service ?=
 up u: ## Up/recreate one or all service containers (optional service="...")
-	docker-compose up -d --remove-orphans $(service)
+	docker-compose up -d --remove-orphans $(service) --force-recreate
 
 stop: service ?= 
 stop: ## Stop environment
@@ -86,14 +103,14 @@ down: service ?=
 down: ## Stop environment
 	docker-compose down
 
-log l: service ?= samapi
+log l: service ?=
 log l: follow ?= -f
 log l: ## Show logs. Usage: make logs [service=app]
 	docker-compose logs $(follow) $(service)
 
-cli exec c: service ?= samapi
+cli exec c: service ?= ddns
 cli exec c: bash ?= ash
-cli exec c: workdir ?= $(CURDIR)
+cli exec c: workdir ?= /app
 cli exec c: tty ?= 
 cli exec c: ## Execute commands in service containers, use "command"  argument to send the command. By Default enter the shell.
 	docker-compose exec -w $(workdir) $(tty) $(service) $(bash) $(command)
@@ -116,6 +133,20 @@ test.cv tcv:
 	@npm run test:coverage
 test t:
 	@npm run test $(command)
+
+gopath:
+	export PATH=$PATH:$(go env GOPATH)/bin
+
+awsrie.install:
+	mkdir -p ~/.aws-lambda-rie && curl -Lo ~/.aws-lambda-rie/aws-lambda-rie https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie-arm64 && chmod +x ~/.aws-lambda-rie/aws-lambda-rie
+
+# dev:
+# 	~/.aws-lambda-rie/aws-lambda-rie $(CURDIR)/.build/main
+dev:
+	docker run --rm -p 9000:8080 --platform linux/arm64/v8 -v $(CURDIR):/var/task \
+		-v $(CURDIR)/.build/main:/var/runtime/bootstrap \
+		-e DOCKER_LAMBDA_USE_STDIN=1 \
+		public.ecr.aws/lambda/provided:al2023-arm64 .build/main
 
 h help: ## This help.
 	@echo 'ℹ️  Usage: make <task> [option=value]' 

@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	// "log"
-	// "os"
-	// "strings"
+	"ddns-rcermeno/internal/service/ddns"
+	"ddns-rcermeno/pkg/utils"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
@@ -15,22 +14,25 @@ import (
 func handleRequest(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
 	fmt.Println("___Init___")
-	fmt.Println(event.Headers)
 
-	ip := ""
+	ip := utils.GetIpFromHeaders(event.Headers)
+	host := utils.GetHostFromHeaders(event.Headers)
+	err := ddns.UpdateIp(host, ip)
 
-	for key, value := range event.Headers {
-		if key == "X-Forwarded-For" {
-			ip = strings.Split(value, ",")[0]
-		}
+	httpCode := 200
+	resText := "good"
+
+	if err != nil {
+		fmt.Println("Error: ", err)
+		httpCode = 400
+		resText = "bad"
 	}
-	fmt.Println(ip)
-	fmt.Println(event.Body)
+
 	fmt.Println("___End___")
 
 	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       "good " + ip,
+		StatusCode: httpCode,
+		Body:       resText + " " + ip,
 		Headers: map[string]string{
 			"Content-type": "text/plain",
 		},

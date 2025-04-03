@@ -1,0 +1,9 @@
+protocol=dyndns2
+use=web
+web=https://api.ipify.org
+server=qir8yu5u00.execute-api.us-east-1.amazonaws.com
+script=/Stage/refresh-ip
+login=some_user
+password='ignored'
+ssl=yes
+homelab.infinitysoft.tech
