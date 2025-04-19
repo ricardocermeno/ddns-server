@@ -18,6 +18,9 @@ Parameters:
     Type: String
     Description: When you need to specify a different architecture for compiling locally (See makefile build commands)
     Default: arm64
+  HostedZoneId:
+    Type: String
+    Description: "Route53 Hosted Zone ID"
 Globals:
   Function:
     Runtime: provided.al2023
@@ -39,6 +42,9 @@ Resources:
     Properties:
       CodeUri: ./
       Handler: bootstrap
+      Environment:
+        Variables:
+          HOSTED_ZONE_ID: !Ref HostedZoneId
       Events:
         RefreshIP:
           Type: Api

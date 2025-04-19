@@ -1,8 +1,8 @@
 FROM golang:1.23.3-alpine as base
 RUN apk add curl file
-RUN go install github.com/ricardocermeno/lambdarpc@latest
 RUN go install github.com/githubnemo/CompileDaemon@latest
 RUN go install github.com/go-delve/delve/cmd/dlv@latest
+RUN go install github.com/ricardocermeno/lambdarpc@latest
 RUN curl -sLo /tmp/aws-lambda-rie https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie-arm64 && mv /tmp/aws-lambda-rie /usr/local/bin/aws-lambda-rie && chmod +x /usr/local/bin/aws-lambda-rie
 
 WORKDIR /app

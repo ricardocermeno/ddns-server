@@ -1,6 +1,7 @@
 package store
 
 import (
+	"ddns-rcermeno/internal/service/awssdk"
 	"ddns-rcermeno/pkg/utils"
 	"fmt"
 
@@ -30,9 +31,9 @@ func DNSRecordGetAll(limit *int32) []DnsRecord {
 	return domains
 }
 
-func DnsRecordGetById(domain string) (dnsRecord DnsRecord) {
+func DnsRecordGetById(domain string) *DnsRecord {
 
-	ddbRecord, err := SVC.GetItem(&dynamodb.GetItemInput{
+	ddbRecord, err := awssdk.DynamoSVC.GetItem(&dynamodb.GetItemInput{
 		TableName: &DNS_TABLE_NAME,
 		Key: map[string]*dynamodb.AttributeValue{
 			"Domain": {
@@ -43,21 +44,23 @@ func DnsRecordGetById(domain string) (dnsRecord DnsRecord) {
 
 	if utils.IsDefined(err) {
 		fmt.Println(err)
-		return
+		return nil
 	}
 
-	if ddbRecord == nil {
-		return
+	if ddbRecord.Item == nil {
+		return nil
 	}
 
-	unmarshalErr := dynamodbattribute.UnmarshalMap(ddbRecord.Item, dnsRecord)
+	dnsRecord := DnsRecord{}
+
+	unmarshalErr := dynamodbattribute.UnmarshalMap(ddbRecord.Item, &dnsRecord)
 
 	if unmarshalErr != nil {
 		fmt.Println(unmarshalErr)
-		return
+		return nil
 	}
 
-	return
+	return &dnsRecord
 }
 
 // func DNSRecordGetAll(limit *int32) []DnsRecord {
@@ -112,7 +115,7 @@ func DnsRecordUpdate(host string, ip string) error {
 		Item:      item,
 	}
 
-	_, err = SVC.PutItem(input)
+	_, err = awssdk.DynamoSVC.PutItem(input)
 
 	if utils.IsDefined(err) {
 		return err

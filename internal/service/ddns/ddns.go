@@ -1,15 +1,30 @@
 package ddns
 
 import (
+	"ddns-rcermeno/internal/service/dns"
 	"ddns-rcermeno/internal/service/store"
 )
 
 func UpdateIp(host string, ip string) error {
-	dns := store.DnsRecordGetById(host)
 
-	if dns.Ip == ip {
-		return nil
+	if dns := store.DnsRecordGetById(host); dns != nil {
+		if dns.Ip == ip {
+			return nil
+		}
 	}
 
-	return store.DnsRecordUpdate(host, ip)
+	err := store.DnsRecordUpdate(host, ip)
+
+	if err != nil {
+		return err
+	}
+
+	err = dns.UpdateRecordSet(host, ip)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
 }
