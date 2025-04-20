@@ -51,3 +51,5 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: DNS
+        - Route53ChangeResourceRecordSetsPolicy:
+            HostedZoneId: !Ref HostedZoneId
