@@ -48,6 +48,6 @@ Resources:
           Properties:
             Path: /refresh-ip
             Method: get
-      # Policies:
-      #   - LambdaInvokePolicy:
-      #       FunctionName: '*'
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: DNS
