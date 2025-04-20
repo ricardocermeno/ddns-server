@@ -25,7 +25,12 @@ sam:
 
 sam.build sb: arch ?= arm64
 sam.build sb: ## Generate AWS SAM package
+	mkdir -p .artifacts
+	cp $(CURDIR)/cmd/lambda/main.go .artifacts
+	cp -R $(CURDIR)/{internal,pkg} .artifacts
+	cp $(CURDIR)/{go.mod,go.sum} .artifacts
 	make sam command="build -p --use-container --parameter-overrides 'Architecture=$(arch) HostedZoneId=${HOSTED_ZONE_ID}'"
+	rm -rf .artifacts
 
 build.amd b.amd:
 	make build arch="x86_64"
@@ -42,7 +47,7 @@ package p: ## Generate AWS SAM package
 
 deploy d: stage ?= dev
 deploy d: ## Deploy stack of AWS SAM package in specific stage
-	make sam command="deploy --stack-name $(stage)-$(stack-name) --parameter-overrides Stage=$(stage) StackName=$(stack-name)"
+	make sam command="deploy --stack-name $(stage)-$(stack-name) --parameter-overrides Stage=$(stage) StackName=$(stack-name) HostedZoneId=${HOSTED_ZONE_ID}"
 
 deploy.dev:
 	@make deploy

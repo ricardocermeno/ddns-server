@@ -26,3 +26,4 @@ go.work.sum
 .aws-sam
 .gebug
 .build
+.artifacts
