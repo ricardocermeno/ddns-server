@@ -28,9 +28,6 @@ Globals:
     Timeout: 30
     MemorySize: 128
     Handler: bootstrap
-    Environment:
-      Variables:
-        SOME_ENV_VAR: "some-value"
 
 Resources:
 

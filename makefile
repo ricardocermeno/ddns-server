@@ -23,9 +23,9 @@ sam: command ?= --help
 sam:
 	@make samcli bin="sam $(command)"
 
-sam.build sb: arch ?= arm64 
+sam.build sb: arch ?= arm64
 sam.build sb: ## Generate AWS SAM package
-	make sam command="build -p --use-container --parameter-overrides 'Architecture=$(arch)'"
+	make sam command="build -p --use-container --parameter-overrides 'Architecture=$(arch) HostedZoneId=${HOSTED_ZONE_ID}'"
 
 build.amd b.amd:
 	make build arch="x86_64"
